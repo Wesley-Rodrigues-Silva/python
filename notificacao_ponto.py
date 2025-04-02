@@ -63,7 +63,7 @@ for email, info in notificacoes.items():
     # Criar e enviar o e-mail via Outlook
     mail = outlook.CreateItem(0)
     mail.To = email
-    mail.Subject = "Notificação de Esquecimento de Ponto"
+    mail.Subject = "TESTE"
     mail.Body = mensagem
     mail.Send()
     
