@@ -32,7 +32,7 @@ outlook = win32com.client.Dispatch("Outlook.Application")
 
 # Selecionar a conta específica para envio
 conta = None
-email_envio = "silvawr@fundasp.org.br"  # Altere para o e-mail correto
+email_envio = "dev.wesley@hotmail.com"  # Altere para o e-mail correto
 
 for acc in outlook.Session.Accounts:
     if acc.SmtpAddress.lower() == email_envio.lower():
