@@ -30,6 +30,19 @@ for _, row in mensal_df.iterrows():
 # Inicializar o Outlook para envio de e-mails
 outlook = win32com.client.Dispatch("Outlook.Application")
 
+# Selecionar a conta específica para envio
+conta = None
+email_envio = "silvawr@fundasp.org.br"  # Altere para o e-mail correto
+
+for acc in outlook.Session.Accounts:
+    if acc.SmtpAddress.lower() == email_envio.lower():
+        conta = acc
+        break
+
+if not conta:
+    print(f"Conta de e-mail '{email_envio}' não encontrada. Verifique se está configurada no Outlook.")
+    exit()
+
 # Iterar sobre os funcionários a serem notificados
 for email, info in notificacoes.items():
     nome = info["nome"]
@@ -37,31 +50,21 @@ for email, info in notificacoes.items():
     notificacoes_anteriores = historico_df.loc[historico_df["Email"] == email, "Notificacoes"].values
     
     # Verificar quantas notificações o funcionário já recebeu
-    if len(notificacoes_anteriores) > 0:
-        num_notificacoes = notificacoes_anteriores[0] + 1
-    else:
-        num_notificacoes = 1
+    num_notificacoes = notificacoes_anteriores[0] + 1 if len(notificacoes_anteriores) > 0 else 1
     
     # Ajustar a mensagem dependendo da quantidade de datas
-    if len(datas) == 1:
-        texto_datas = f"você esqueceu de registrar na seguinte data: {datas[0]}"
-    else:
-        texto_datas = f"você esqueceu de registrar nas seguintes datas: {', '.join(datas)}"
+    texto_datas = f"você esqueceu de registrar na seguinte data: {datas[0]}" if len(datas) == 1 \
+        else f"você esqueceu de registrar nas seguintes datas: {', '.join(datas)}"
     
     # Definir a mensagem personalizada conforme o número de notificações
-    if num_notificacoes >= 3:
-        mensagem = (f"Prezado(a) {nome},\n\n"
-                    f"Identificamos que {texto_datas}.\n"
-                    f"Esta é sua {num_notificacoes}ª notificação. Caso tenha outros esquecimentos nos meses seguintes, será descontado como falta.\n\n"
-                    "Atenciosamente,\nRecursos Humanos")
-    else:
-        mensagem = (f"Prezado(a) {nome},\n\n"
-                    f"Identificamos que {texto_datas}.\n"
-                    f"Esta é sua {num_notificacoes}ª notificação de esquecimento.\n\n"
-                    "Atenciosamente,\nRecursos Humanos")
-    
+    mensagem = (f"Prezado(a) {nome},\n\n"
+                f"Identificamos que {texto_datas}.\n"
+                f"Esta é sua {num_notificacoes}ª notificação de esquecimento.\n\n"
+                "Atenciosamente,\nRecursos Humanos")
+
     # Criar e enviar o e-mail via Outlook
     mail = outlook.CreateItem(0)
+    mail.SendUsingAccount = conta  # Definir a conta correta para envio
     mail.To = email
     mail.Subject = "TESTE"
     mail.Body = mensagem
